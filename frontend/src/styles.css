@@ -1,0 +1,62 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color: #17211b;
+  background: #f3efe4;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  background:
+    linear-gradient(90deg, rgba(23, 33, 27, 0.04) 1px, transparent 1px),
+    linear-gradient(rgba(23, 33, 27, 0.035) 1px, transparent 1px),
+    #f3efe4;
+  background-size: 28px 28px;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+.field {
+  @apply w-full rounded-md border border-ink/15 bg-bone px-3 py-2 text-sm outline-none transition placeholder:text-ink/35 focus:border-water focus:ring-2 focus:ring-water/20;
+}
+
+.label {
+  @apply text-xs font-semibold uppercase tracking-normal text-ink/60;
+}
+
+.btn-primary {
+  @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-ink px-4 py-2 text-sm font-semibold text-bone transition hover:bg-moss disabled:cursor-not-allowed disabled:opacity-50;
+}
+
+.btn-secondary {
+  @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-ink/15 bg-bone px-4 py-2 text-sm font-semibold text-ink transition hover:border-water hover:text-water disabled:cursor-not-allowed disabled:opacity-50;
+}
+
+.panel {
+  @apply border border-ink/10 bg-bone/90 shadow-soft;
+}
+
+.field-shell {
+  @apply rounded-lg border border-ink/10 bg-shell/70 p-3 transition focus-within:border-water focus-within:bg-bone focus-within:ring-2 focus-within:ring-water/15;
+}
+
+.chip {
+  @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-ink/10 bg-bone px-3 text-sm font-semibold text-ink/70 transition hover:border-water hover:text-water;
+}
+
+.chip-active {
+  @apply border-ink bg-ink text-bone hover:border-ink hover:text-bone;
+}
