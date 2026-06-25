@@ -3,23 +3,10 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api import auth, feeding, growth, notifications, pets, reminders
 from app.core.config import get_settings
-from app.core.database import Base, engine
-from app import models  # noqa: F401
+from app.core.startup import initialize_database
 
 
 settings = get_settings()
-
-
-def ensure_sqlite_columns() -> None:
-    if not str(engine.url).startswith("sqlite"):
-        return
-
-    with engine.begin() as conn:
-        reminder_columns = {
-            row[1] for row in conn.exec_driver_sql("PRAGMA table_info(reminders)").fetchall()
-        }
-        if "repeat_interval_days" not in reminder_columns:
-            conn.exec_driver_sql("ALTER TABLE reminders ADD COLUMN repeat_interval_days INTEGER")
 
 
 def create_app() -> FastAPI:
@@ -42,8 +29,7 @@ def create_app() -> FastAPI:
 
     @app.on_event("startup")
     def on_startup() -> None:
-        Base.metadata.create_all(bind=engine)
-        ensure_sqlite_columns()
+        initialize_database()
 
     @app.get("/api/health")
     def health() -> dict[str, str]:

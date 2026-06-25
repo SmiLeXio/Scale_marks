@@ -5,6 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import joinedload
 
 from app.core.database import SessionLocal
+from app.core.startup import initialize_database
 from app.models.notification import NotificationLog, QQGroupBinding
 from app.models.pet import Pet
 from app.models.reminder import Reminder
@@ -196,6 +197,7 @@ async def send_due_summaries() -> None:
 
 
 async def main() -> None:
+    initialize_database()
     print("[reminder-worker] started", flush=True)
     while True:
         await send_due_point_reminders()

@@ -7,6 +7,7 @@ from sqlalchemy import select
 
 from app.core.config import get_settings
 from app.core.database import SessionLocal
+from app.core.startup import initialize_database
 from app.models.notification import QQGroupBinding
 
 
@@ -47,6 +48,7 @@ class LinjiQQGroupBot(botpy.Client):
 
 
 async def main() -> None:
+    initialize_database()
     settings = get_settings()
     if not settings.qq_bot_app_id or not settings.qq_bot_secret:
         raise RuntimeError("QQ_BOT_APP_ID and QQ_BOT_SECRET are required")
