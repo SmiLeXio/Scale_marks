@@ -1,4 +1,5 @@
-from datetime import date, datetime
+from calendar import monthrange
+from datetime import date, datetime, timedelta
 
 from app.models.reminder import Reminder
 
@@ -28,6 +29,34 @@ def reminder_occurs_on(reminder: Reminder, target_date: date) -> bool:
     if not interval:
         return False
     return (target_date - first_date).days % interval == 0
+
+
+def add_month(value: datetime) -> datetime:
+    month = value.month + 1
+    year = value.year
+    if month > 12:
+        month = 1
+        year += 1
+    day = min(value.day, monthrange(year, month)[1])
+    return value.replace(year=year, month=month, day=day)
+
+
+def next_due_date(reminder: Reminder, after: datetime | None = None) -> datetime | None:
+    after = after or datetime.now()
+    candidate = reminder.due_date
+
+    if reminder.repeat_type == "monthly":
+        while candidate <= after:
+            candidate = add_month(candidate)
+        return candidate
+
+    interval = repeat_interval_days(reminder)
+    if not interval:
+        return None
+
+    while candidate <= after:
+        candidate = candidate + timedelta(days=interval)
+    return candidate
 
 
 def build_daily_summary(reminders: list[Reminder], target_date: date | None = None) -> str:

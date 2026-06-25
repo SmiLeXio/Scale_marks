@@ -9,6 +9,7 @@ from app.api.pets import get_owned_pet
 from app.models.pet import Pet
 from app.models.reminder import Reminder
 from app.schemas.reminder import ReminderCreate, ReminderRead
+from app.services.reminder_schedule import next_due_date
 
 router = APIRouter(prefix="/reminders", tags=["reminders"])
 
@@ -86,8 +87,13 @@ def complete_reminder(
     reminder = db.scalar(user_reminder_query(current_user.id).where(Reminder.id == reminder_id))
     if not reminder:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Reminder not found")
-    reminder.is_completed = True
     reminder.completed_at = datetime.utcnow()
+    next_date = next_due_date(reminder)
+    if next_date:
+        reminder.due_date = next_date
+        reminder.is_completed = False
+    else:
+        reminder.is_completed = True
     db.commit()
     db.refresh(reminder)
     return serialize_reminder(reminder)

@@ -1,6 +1,6 @@
 <script setup>
 import { computed, reactive, ref, watch } from 'vue'
-import { Plus } from 'lucide-vue-next'
+import { Plus, X } from 'lucide-vue-next'
 import EmptyState from '../components/EmptyState.vue'
 import GrowthChart from '../components/GrowthChart.vue'
 import PageHeader from '../components/PageHeader.vue'
@@ -13,6 +13,7 @@ const petsStore = usePetsStore()
 const selectedPetId = ref('')
 const records = ref([])
 const loading = ref(false)
+const showCreate = ref(false)
 const form = reactive({
   date: todayDate(),
   weight: '',
@@ -56,8 +57,14 @@ async function addRecord() {
   form.weight = ''
   form.length = ''
   form.note = ''
+  showCreate.value = false
   await loadRecords()
   await petsStore.fetchPets()
+}
+
+function openCreate() {
+  form.date = todayDate()
+  showCreate.value = true
 }
 </script>
 
@@ -82,7 +89,7 @@ async function addRecord() {
         <PetSelector v-model="selectedPetId" :pets="petsStore.pets" />
       </div>
 
-      <div class="grid gap-6 xl:grid-cols-[1fr_360px]">
+      <div class="grid gap-6">
         <div class="panel rounded-lg p-5">
           <div class="mb-4 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
             <div>
@@ -97,31 +104,6 @@ async function addRecord() {
           </p>
         </div>
 
-        <form class="panel rounded-lg p-5" @submit.prevent="addRecord">
-          <h2 class="mb-4 text-xl font-black">新增记录</h2>
-          <div class="space-y-4">
-            <label class="block">
-              <span class="label">日期</span>
-              <input v-model="form.date" class="field mt-1" type="date" required />
-            </label>
-            <label class="block">
-              <span class="label">体重 g</span>
-              <input v-model="form.weight" class="field mt-1" type="number" min="0" step="0.1" />
-            </label>
-            <label class="block">
-              <span class="label">体长 cm</span>
-              <input v-model="form.length" class="field mt-1" type="number" min="0" step="0.1" />
-            </label>
-            <label class="block">
-              <span class="label">备注</span>
-              <textarea v-model="form.note" class="field mt-1 min-h-24"></textarea>
-            </label>
-          </div>
-          <button class="btn-primary mt-5 w-full" :disabled="loading">
-            <Plus class="h-4 w-4" />
-            添加成长记录
-          </button>
-        </form>
       </div>
 
       <div class="mt-6 panel rounded-lg p-5">
@@ -147,6 +129,53 @@ async function addRecord() {
           </table>
         </div>
       </div>
+
+      <div v-if="showCreate" class="fixed inset-0 z-40 bg-ink/35 p-4 backdrop-blur-sm" @click.self="showCreate = false">
+        <aside class="ml-auto flex h-full max-w-lg flex-col overflow-auto rounded-lg bg-bone p-5 shadow-[0_30px_80px_rgba(23,33,27,.35)]">
+          <div class="mb-5 flex items-start justify-between gap-4">
+            <div>
+              <p class="label text-clay">Growth Log</p>
+              <h2 class="mt-1 text-2xl font-black">新增记录</h2>
+              <p class="mt-2 text-sm leading-6 text-ink/60">记录体重、体长和备注，曲线会在保存后自动更新。</p>
+            </div>
+            <button class="rounded-md p-2 text-ink/55 hover:bg-shell" aria-label="关闭新增记录" @click="showCreate = false">
+              <X class="h-5 w-5" />
+            </button>
+          </div>
+
+          <form class="space-y-4" @submit.prevent="addRecord">
+            <label class="block">
+              <span class="label">日期</span>
+              <input v-model="form.date" class="field mt-1" type="date" required />
+            </label>
+            <label class="block">
+              <span class="label">体重 g</span>
+              <input v-model="form.weight" class="field mt-1" type="number" min="0" step="0.1" />
+            </label>
+            <label class="block">
+              <span class="label">体长 cm</span>
+              <input v-model="form.length" class="field mt-1" type="number" min="0" step="0.1" />
+            </label>
+            <label class="block">
+              <span class="label">备注</span>
+              <textarea v-model="form.note" class="field mt-1 min-h-24"></textarea>
+            </label>
+            <button class="btn-primary w-full" :disabled="loading">
+              <Plus class="h-4 w-4" />
+              添加成长记录
+            </button>
+          </form>
+        </aside>
+      </div>
+
+      <button
+        class="fixed bottom-24 right-5 z-20 grid h-14 w-14 place-items-center rounded-full bg-ink text-bone shadow-soft transition hover:bg-moss lg:bottom-8"
+        type="button"
+        aria-label="新增成长记录"
+        @click="openCreate"
+      >
+        <Plus class="h-6 w-6" />
+      </button>
     </template>
   </section>
 </template>

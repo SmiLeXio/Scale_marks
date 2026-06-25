@@ -1,6 +1,6 @@
 <script setup>
 import { computed, reactive, ref, watch } from 'vue'
-import { Calculator, Plus } from 'lucide-vue-next'
+import { Calculator, Plus, X } from 'lucide-vue-next'
 import EmptyState from '../components/EmptyState.vue'
 import PageHeader from '../components/PageHeader.vue'
 import PetSelector from '../components/PetSelector.vue'
@@ -12,6 +12,7 @@ const petsStore = usePetsStore()
 const selectedPetId = ref('')
 const records = ref([])
 const suggestion = ref(null)
+const showCreate = ref(false)
 const form = reactive({
   date: todayDate(),
   food_type: '小鼠',
@@ -59,8 +60,14 @@ async function addRecord() {
   form.note = ''
   form.refused = false
   form.is_success = true
+  showCreate.value = false
   await loadFeeding()
   await petsStore.fetchPets()
+}
+
+function openCreate() {
+  form.date = todayDate()
+  showCreate.value = true
 }
 </script>
 
@@ -85,7 +92,7 @@ async function addRecord() {
         <PetSelector v-model="selectedPetId" :pets="petsStore.pets" />
       </div>
 
-      <div class="grid gap-6 xl:grid-cols-[1fr_380px]">
+      <div class="grid gap-6 xl:grid-cols-[380px_minmax(0,1fr)]">
         <div class="grid gap-4 md:grid-cols-3 xl:grid-cols-1">
           <div class="panel rounded-lg p-5">
             <div class="flex items-center justify-between">
@@ -107,9 +114,37 @@ async function addRecord() {
           </div>
         </div>
 
-        <form class="panel rounded-lg p-5" @submit.prevent="addRecord">
-          <h2 class="mb-4 text-xl font-black">记录喂食</h2>
-          <div class="space-y-4">
+        <div class="panel rounded-lg p-5">
+          <h2 class="mb-4 text-xl font-black">喂食历史</h2>
+          <div class="space-y-3">
+            <article v-for="record in records" :key="record.id" class="rounded-md border border-ink/10 bg-shell p-4">
+              <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p class="font-black">{{ record.date }} · {{ record.food_type }}</p>
+                  <p class="text-sm text-ink/60">{{ record.food_weight ?? '-' }}g · {{ record.refused ? '拒食' : record.is_success ? '成功' : '未成功' }}</p>
+                </div>
+                <p class="text-sm text-ink/60">{{ record.note || '' }}</p>
+              </div>
+            </article>
+            <p v-if="!records.length" class="rounded-md bg-shell p-4 text-sm text-ink/60">暂无喂食记录。</p>
+          </div>
+        </div>
+      </div>
+
+      <div v-if="showCreate" class="fixed inset-0 z-40 bg-ink/35 p-4 backdrop-blur-sm" @click.self="showCreate = false">
+        <aside class="ml-auto flex h-full max-w-lg flex-col overflow-auto rounded-lg bg-bone p-5 shadow-[0_30px_80px_rgba(23,33,27,.35)]">
+          <div class="mb-5 flex items-start justify-between gap-4">
+            <div>
+              <p class="label text-clay">Feeding Log</p>
+              <h2 class="mt-1 text-2xl font-black">记录喂食</h2>
+              <p class="mt-2 text-sm leading-6 text-ink/60">保存本次喂食后，系统会按周期更新下一次喂食提醒。</p>
+            </div>
+            <button class="rounded-md p-2 text-ink/55 hover:bg-shell" aria-label="关闭记录喂食" @click="showCreate = false">
+              <X class="h-5 w-5" />
+            </button>
+          </div>
+
+          <form class="space-y-4" @submit.prevent="addRecord">
             <label class="block">
               <span class="label">日期</span>
               <input v-model="form.date" class="field mt-1" type="date" required />
@@ -134,31 +169,24 @@ async function addRecord() {
             </div>
             <label class="block">
               <span class="label">备注</span>
-              <textarea v-model="form.note" class="field mt-1 min-h-20"></textarea>
+              <textarea v-model="form.note" class="field mt-1 min-h-24"></textarea>
             </label>
-          </div>
-          <button class="btn-primary mt-5 w-full">
-            <Plus class="h-4 w-4" />
-            保存喂食记录
-          </button>
-        </form>
+            <button class="btn-primary w-full">
+              <Plus class="h-4 w-4" />
+              保存喂食记录
+            </button>
+          </form>
+        </aside>
       </div>
 
-      <div class="mt-6 panel rounded-lg p-5">
-        <h2 class="mb-4 text-xl font-black">喂食历史</h2>
-        <div class="space-y-3">
-          <article v-for="record in records" :key="record.id" class="rounded-md border border-ink/10 bg-shell p-4">
-            <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p class="font-black">{{ record.date }} · {{ record.food_type }}</p>
-                <p class="text-sm text-ink/60">{{ record.food_weight ?? '-' }}g · {{ record.refused ? '拒食' : record.is_success ? '成功' : '未成功' }}</p>
-              </div>
-              <p class="text-sm text-ink/60">{{ record.note || '' }}</p>
-            </div>
-          </article>
-          <p v-if="!records.length" class="rounded-md bg-shell p-4 text-sm text-ink/60">暂无喂食记录。</p>
-        </div>
-      </div>
+      <button
+        class="fixed bottom-24 right-5 z-20 grid h-14 w-14 place-items-center rounded-full bg-ink text-bone shadow-soft transition hover:bg-moss lg:bottom-8"
+        type="button"
+        aria-label="记录喂食"
+        @click="openCreate"
+      >
+        <Plus class="h-6 w-6" />
+      </button>
     </template>
   </section>
 </template>

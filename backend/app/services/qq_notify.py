@@ -39,6 +39,7 @@ class QQBotNotifier:
     async def send_group_message(self, group_openid: str, content: str) -> None:
         token = await self.get_access_token()
         base_url = "https://sandbox.api.sgroup.qq.com" if self.settings.qq_bot_sandbox else "https://api.sgroup.qq.com"
+        content = content if content.startswith("@everyone") else f"@everyone\n{content}"
         async with httpx.AsyncClient(timeout=10) as client:
             response = await client.post(
                 f"{base_url}/v2/groups/{group_openid}/messages",
